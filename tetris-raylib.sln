@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33829.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tetris-raylib", "tetris-raylib\tetris-raylib.vcxproj", "{5CE87477-A1E7-4F06-AED3-6270B51FE673}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4577B5D7-999E-4F5B-96C1-9DB7E31315DC}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5CE87477-A1E7-4F06-AED3-6270B51FE673}.Debug|x64.ActiveCfg = Debug|x64
+		{5CE87477-A1E7-4F06-AED3-6270B51FE673}.Debug|x64.Build.0 = Debug|x64
+		{5CE87477-A1E7-4F06-AED3-6270B51FE673}.Debug|x86.ActiveCfg = Debug|Win32
+		{5CE87477-A1E7-4F06-AED3-6270B51FE673}.Debug|x86.Build.0 = Debug|Win32
+		{5CE87477-A1E7-4F06-AED3-6270B51FE673}.Release|x64.ActiveCfg = Release|x64
+		{5CE87477-A1E7-4F06-AED3-6270B51FE673}.Release|x64.Build.0 = Release|x64
+		{5CE87477-A1E7-4F06-AED3-6270B51FE673}.Release|x86.ActiveCfg = Release|Win32
+		{5CE87477-A1E7-4F06-AED3-6270B51FE673}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3FF5D62A-D462-49C7-87FC-BBAAD3C3EBE7}
+	EndGlobalSection
+EndGlobal
