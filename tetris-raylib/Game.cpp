@@ -5,7 +5,8 @@
 #include "GameUtils.h"
 
 Game::Game(int width, int height, int fps, std::string title)
-	: board(settings::boardPosition, settings::boardWidthHeight, settings::cellSize, settings::boardPadding)
+	: board(settings::boardPosition, settings::boardWidthHeight, settings::cellSize, settings::boardPadding),
+	speedLevel(settings::initialDropInterval)
 {
 	assert(!GetWindowHandle());	// Make sure we don't already have a window
 	SetTargetFPS(fps);
@@ -42,6 +43,8 @@ void Game::Tick()
 void Game::Draw()
 {
 	ClearBackground(BLACK);
+	DrawText(std::to_string(static_cast<int>(elapsedTime)).c_str(), 10, 10, 20, WHITE);
+	DrawText(("Speed Level: " + std::to_string(speedLevel)).c_str(), 10, 30, 20, WHITE);
 	board.Draw();
 	if (currentTetromino)
 	{
@@ -56,6 +59,16 @@ void Game::Update()
 	}
 
 	float deltaTime = GetFrameTime(); // Get the time elapsed since the last frame
+	elapsedTime += deltaTime;
+
+	// Increase speed level every 60 seconds
+	if (elapsedTime >= settings::timeIntervalSpeedUp * speedLevel) {
+		speedLevel++;
+		// Update the Tetromino drop interval based on the new speed level
+		if (currentTetromino) {
+			currentTetromino->SetDropInterval(std::max(0.1f, 1.0f - 0.1f * (speedLevel - 1)));
+		}
+	}
 
 	if (!currentTetromino || currentTetromino->HasLanded()) {
 		if (currentTetromino)

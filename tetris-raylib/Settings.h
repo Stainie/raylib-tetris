@@ -14,4 +14,8 @@ namespace settings
 	inline constexpr int boardPadding = 2;
 	inline constexpr Vec2<int> boardPosition{200, 200};
 	inline constexpr Vec2<int> boardWidthHeight{10, 20};
+
+	// Game settings
+	inline constexpr float initialDropInterval = 1.0f;
+	inline constexpr float timeIntervalSpeedUp = 60.0f;
 }

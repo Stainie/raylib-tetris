@@ -23,5 +23,8 @@ private:
 
 	Board board;
 	bool isGameOver = false;
+	float elapsedTime = 0.0f;
+	int speedLevel;
+
 	std::unique_ptr<Tetromino> currentTetromino;
 };
