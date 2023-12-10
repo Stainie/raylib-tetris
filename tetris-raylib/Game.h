@@ -3,6 +3,7 @@
 #include <memory>
 #include "Board.h"
 #include "Tetromino.h"
+#include "GameState.h"
 
 class Game
 {
@@ -19,12 +20,17 @@ public:
 	void Tick();
 private:
 	void Draw();
+	void DrawMainMenu();
+	void DrawGameplay();
 	void Update();
+	void UpdateMainMenu();
+	void UpdateGameplay();
 
 	Board board;
 	bool isGameOver = false;
 	float elapsedTime = 0.0f;
 	int speedLevel;
+	GameState currentState = GameState::MainMenu;
 
 	std::unique_ptr<Tetromino> currentTetromino;
 };

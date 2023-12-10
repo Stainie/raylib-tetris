@@ -3,6 +3,7 @@
 #include "raylib.h"
 #include "Settings.h"
 #include "GameUtils.h"
+#include "GameState.h"
 
 Game::Game(int width, int height, int fps, std::string title)
 	: board(settings::boardPosition, settings::boardWidthHeight, settings::cellSize, settings::boardPadding),
@@ -26,7 +27,7 @@ bool Game::ShouldClose() const
 
 void Game::IncreaseDifficulty(float newDropInterval)
 {
-	if (currentTetromino) 
+	if (currentTetromino)
 	{
 		currentTetromino->SetDropInterval(newDropInterval);
 	}
@@ -43,6 +44,31 @@ void Game::Tick()
 void Game::Draw()
 {
 	ClearBackground(BLACK);
+
+	switch (currentState)
+	{
+	case GameState::MainMenu:
+		DrawMainMenu();
+		break;
+	case GameState::Gameplay:
+		DrawGameplay();
+		break;
+	default:
+		break;
+	}
+}
+
+void Game::DrawMainMenu()
+{
+	DrawText("Tetris", 10, 10, 20, WHITE);
+	DrawText("Press Enter to start", 10, 30, 20, WHITE);
+	DrawText("Press F to toggle fullscreen", 10, 50, 20, WHITE);
+	DrawText("Press ESC to exit", 10, 70, 20, WHITE);
+}
+
+void Game::DrawGameplay()
+{
+	ClearBackground(BLACK);
 	DrawText(std::to_string(static_cast<int>(elapsedTime)).c_str(), 10, 10, 20, WHITE);
 	DrawText(("Speed Level: " + std::to_string(speedLevel)).c_str(), 10, 30, 20, WHITE);
 	board.Draw();
@@ -53,6 +79,28 @@ void Game::Draw()
 }
 
 void Game::Update()
+{
+	switch (currentState)
+	{
+	case GameState::MainMenu:
+		UpdateMainMenu();
+		break;
+	case GameState::Gameplay:
+		UpdateGameplay();
+		break;
+	default:
+		break;
+	}
+}
+
+void Game::UpdateMainMenu()
+{
+	if (IsKeyPressed(KEY_ENTER)) { // Example condition to start the game
+		currentState = GameState::Gameplay;
+	}
+}
+
+void Game::UpdateGameplay()
 {
 	if (board.IsTopRowOccupied()) {
 		isGameOver = true;
@@ -122,5 +170,4 @@ void Game::Update()
 
 	currentTetromino->Update(deltaTime);
 	board.Update();
-
 }
