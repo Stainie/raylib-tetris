@@ -53,6 +53,9 @@ void Game::Draw()
 	case GameState::Gameplay:
 		DrawGameplay();
 		break;
+	case GameState::Pause:
+		DrawPause();
+		break;
 	default:
 		break;
 	}

@@ -63,13 +63,28 @@ bool Tetromino::IsCellAt(int x, int y) const
 
 void Tetromino::CheckCollisionBeforeRotation()
 {
-	// Before rotating, check if the Tetromino is colliding with the board horizontally. If so, move it to the right or left (depending on the side), to avoid the assertion on the Board
-	if (IsCollidingWithBoard()) {
-		pos += Vec2<int>(1, 0);
-		if (IsCollidingWithBoard()) {
-			pos -= Vec2<int>(2, 0);
-		}
+	// Save the original position
+	Vec2<int> originalPos = pos;
+
+	// Define the offset sequence to try (wall kick)
+	const std::vector<Vec2<int>> offsets = {
+		Vec2<int>(0, 0),    // No offset (check if it already fits)
+		Vec2<int>(1, 0),    // Right by 1
+		Vec2<int>(-1, 0),   // Left by 1
+		Vec2<int>(2, 0),    // Right by 2
+		Vec2<int>(-2, 0)    // Left by 2
+	};
+
+	// Try each offset
+	for (const auto& offset : offsets)
+	{
+		pos = originalPos + offset;
+		if (!IsCollidingWithBoard())
+			return;  // Success! We found a position that works
 	}
+
+	// If all offsets failed, revert to the original position
+	pos = originalPos;
 }
 
 bool Tetromino::IsCollidingWithBoard() const {
