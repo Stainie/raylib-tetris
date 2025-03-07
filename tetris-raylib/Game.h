@@ -22,9 +22,11 @@ private:
 	void Draw();
 	void DrawMainMenu();
 	void DrawGameplay();
+	void DrawPause();
 	void Update();
 	void UpdateMainMenu();
 	void UpdateGameplay();
+	void UpdatePause();
 
 	Board board;
 	bool isGameOver = false;

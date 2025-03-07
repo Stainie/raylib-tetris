@@ -26,6 +26,7 @@ public:
 	void SetDropInterval(float interval);
 	void AddToBoard() const;
 	bool HasLanded() const;
+	void Reset();
 private:
 	Vec2<int> pos;
 	Vec2<int> GetLastPos() const;

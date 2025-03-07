@@ -136,3 +136,11 @@ int Board::GetHeight() const
 {
 	return height;
 }
+
+void Board::Reset()
+{
+	for (int y = 0; y < height; ++y)
+		for (int x = 0; x < width; ++x) {
+			RemoveCell(Vec2<int>(x, y));
+		}
+}

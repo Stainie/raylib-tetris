@@ -33,6 +33,8 @@ public:
 	void RemoveCell(Vec2<int> pos);
 	int GetWidth() const;
 	int GetHeight() const;
+
+	void Reset();
 private:
 	std::vector<Cell> cells;
 	const int width;

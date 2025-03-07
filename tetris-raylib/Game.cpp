@@ -78,6 +78,15 @@ void Game::DrawGameplay()
 	}
 }
 
+void Game::DrawPause()
+{
+	DrawText("PAUSED", 10, 10, 20, WHITE);
+	DrawText("Press P to resume", 10, 30, 20, WHITE);
+	DrawText("Press F to toggle fullscreen", 10, 50, 20, WHITE);
+	DrawText("Press R to restart", 10, 70, 20, WHITE);
+	DrawText("Press ESC to exit", 10, 90, 20, WHITE);
+}
+
 void Game::Update()
 {
 	switch (currentState)
@@ -88,6 +97,9 @@ void Game::Update()
 	case GameState::Gameplay:
 		UpdateGameplay();
 		break;
+	case GameState::Pause:
+		UpdatePause();
+		break;
 	default:
 		break;
 	}
@@ -97,6 +109,14 @@ void Game::UpdateMainMenu()
 {
 	if (IsKeyPressed(KEY_ENTER)) { // Example condition to start the game
 		currentState = GameState::Gameplay;
+	}
+	else if (IsKeyPressed(KEY_F))
+	{
+		ToggleFullscreen();
+	}
+	else if (IsKeyPressed(KEY_ESCAPE))
+	{
+		CloseWindow();
 	}
 }
 
@@ -147,18 +167,15 @@ void Game::UpdateGameplay()
 	{
 		currentTetromino->Drop();
 	}
-	/*else if (IsKeyPressed(KEY_R))
+	else if (IsKeyPressed(KEY_R))
 	{
 		board.Reset();
+		currentTetromino->Reset();
 	}
 	else if (IsKeyPressed(KEY_P))
 	{
-		board.Pause();
+		currentState = GameState::Pause;
 	}
-	else if (IsKeyPressed(KEY_C))
-	{
-		board.Continue();
-	}*/
 	else if (IsKeyPressed(KEY_ESCAPE))
 	{
 		CloseWindow();
@@ -170,4 +187,26 @@ void Game::UpdateGameplay()
 
 	currentTetromino->Update(deltaTime);
 	board.Update();
+}
+
+void Game::UpdatePause()
+{
+	if (IsKeyPressed(KEY_P))
+	{
+		currentState = GameState::Gameplay;
+	}
+	else if (IsKeyPressed(KEY_F))
+	{
+		ToggleFullscreen();
+	}
+	else if (IsKeyPressed(KEY_R))
+	{
+		board.Reset();
+		currentTetromino->Reset();
+		currentState = GameState::Gameplay;
+	}
+	else if (IsKeyPressed(KEY_ESCAPE))
+	{
+		CloseWindow();
+	}
 }

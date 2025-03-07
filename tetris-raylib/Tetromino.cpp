@@ -158,3 +158,11 @@ bool Tetromino::HasLanded() const
 {
 	return hasLanded;
 }
+
+void Tetromino::Reset()
+{
+	pos = Vec2<int>(board.GetWidth() / 2 - dimension / 2, 0);
+	hasLanded = false;
+	timeSinceLastMove = 0.0f;
+	currentRotation = Rotation::Zero;
+}
