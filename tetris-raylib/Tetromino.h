@@ -31,6 +31,7 @@ private:
 	Vec2<int> pos;
 	Vec2<int> GetLastPos() const;
 	bool IsCellAt(int x, int y) const;
+	void CheckCollisionBeforeRotation();
 	bool IsCollidingWithBoard() const;
 	Rotation currentRotation;
 	bool hasLanded;

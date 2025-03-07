@@ -61,6 +61,17 @@ bool Tetromino::IsCellAt(int x, int y) const
 
 }
 
+void Tetromino::CheckCollisionBeforeRotation()
+{
+	// Before rotating, check if the Tetromino is colliding with the board horizontally. If so, move it to the right or left (depending on the side), to avoid the assertion on the Board
+	if (IsCollidingWithBoard()) {
+		pos += Vec2<int>(1, 0);
+		if (IsCollidingWithBoard()) {
+			pos -= Vec2<int>(2, 0);
+		}
+	}
+}
+
 bool Tetromino::IsCollidingWithBoard() const {
 	for (int y = 0; y < dimension; ++y) {
 		for (int x = 0; x < dimension; ++x) {
@@ -102,6 +113,7 @@ void Tetromino::Update(float deltaTime) {
 void Tetromino::RotateClockwise()
 {
 	currentRotation = static_cast<Rotation>((static_cast<int>(currentRotation) + 90) % 360);
+	CheckCollisionBeforeRotation();
 }
 
 void Tetromino::RotateCounterClockwise()
@@ -109,9 +121,11 @@ void Tetromino::RotateCounterClockwise()
 	if (currentRotation == Rotation::Zero)
 	{
 		currentRotation = Rotation::TwoSeventy;
+		CheckCollisionBeforeRotation();
 		return;
 	}
 	currentRotation = static_cast<Rotation>((static_cast<int>(currentRotation) - 90) % 360);
+	CheckCollisionBeforeRotation();
 }
 
 void Tetromino::MoveLeft() {
