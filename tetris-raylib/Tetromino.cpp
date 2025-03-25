@@ -394,22 +394,35 @@ void Tetromino::Update(float deltaTime)
 
 	timeSinceLastMove += deltaTime;
 
-	// Determine if we should be in physics mode
-	physics.isStable = IsStable();
-	bool shouldUsePhysics = !physics.isStable;
+	if (currentMode == PhysicsMode::Grid)
+	{
+		if (timeSinceLastMove >= moveInterval) {
+			timeSinceLastMove = 0.0f;
 
-	// Switch modes if needed
-	if (shouldUsePhysics && currentMode == PhysicsMode::Grid) {
-		currentMode = PhysicsMode::Continuous;
-	}
-	else if (!shouldUsePhysics && currentMode == PhysicsMode::Continuous) {
-		// When switching back to grid, snap rotation to nearest 90 degrees
-		currentRotation = round(currentRotation / 90.0f) * 90.0f;
-		currentMode = PhysicsMode::Grid;
+			pos += Vec2<int>(0, 1);
+
+			// Temporarily move the Tetromino down for collision check
+			if (IsCollidingWithBoard()) {
+				// Revert the position if collision detected
+				pos -= Vec2<int>(0, 1);
+				hasLanded = true;
+			}
+		}
+
 	}
 
-	// Apply physics only in continuous mode
-	if (currentMode == PhysicsMode::Continuous) {
+	else
+	{
+		// Determine if we should be in physics mode
+		physics.isStable = IsStable();
+		bool shouldUsePhysics = !physics.isStable;
+
+		if (!shouldUsePhysics) {
+			// When switching back to grid, snap rotation to nearest 90 degrees
+			currentRotation = round(currentRotation / 90.0f) * 90.0f;
+			currentMode = PhysicsMode::Grid;
+		}
+
 		// Apply physics calculations
 		float torque = CalculateTorque();
 		physics.angularVelocity += torque * deltaTime;
@@ -428,25 +441,10 @@ void Tetromino::Update(float deltaTime)
 
 		// Update integer position
 		pos = Vec2<int>(round(physics.position.GetX()), round(physics.position.GetY()));
+
+		// Handle collisions and boundaries
+		HandleBoundariesAndCollisions();
 	}
-	else {
-		// Regular grid-based updates (similar to original Tetris)
-		if (timeSinceLastMove >= moveInterval) {
-			timeSinceLastMove = 0.0f;
-
-			pos += Vec2<int>(0, 1);
-			physics.position = Vec2<float>(pos.GetX(), pos.GetY());
-
-			if (IsCollidingWithBoard()) {
-				pos -= Vec2<int>(0, 1);
-				physics.position = Vec2<float>(pos.GetX(), pos.GetY());
-				hasLanded = true;
-			}
-		}
-	}
-
-	// Handle collisions and boundaries
-	HandleBoundariesAndCollisions();
 }
 
 
