@@ -7,6 +7,14 @@
 class Tetromino
 {
 public:
+	enum class GridRotation
+	{
+		Zero = 0,
+		Ninety = 90,
+		OneEighty = 180,
+		TwoSeventy = 270
+	};
+public:
 	Tetromino(const bool* shape, int dimension, Color color, Board& board);
 	void Draw() const;
 	void Update(float deltaTime);
@@ -36,7 +44,7 @@ private:
 	};
 
 	Physics physics;
-	PhysicsMode currentMode = PhysicsMode::Continuous;
+	PhysicsMode currentMode = PhysicsMode::Grid;
 
 	void DrawGridBased() const;
 	void DrawContinuous() const;
@@ -55,6 +63,7 @@ private:
 	bool IsCollidingWithBoard() const;
 	float NormalizeAngle(float angle) const;
 	float currentRotation = 0.0f;
+	GridRotation currentGridRotation = GridRotation::Zero;
 	bool hasLanded;
 	float timeSinceLastMove;
 	float moveInterval;

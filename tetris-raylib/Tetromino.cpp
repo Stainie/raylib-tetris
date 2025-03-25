@@ -207,28 +207,19 @@ Vec2<int> Tetromino::GetLastPos() const {
 bool Tetromino::IsCellAt(int x, int y) const
 {
 	if (currentMode == PhysicsMode::Grid) {
-		// In grid mode, we use 90-degree rotations only (simplifies things)
-		int rot = static_cast<int>(round(currentRotation / 90.0f)) % 4;
-		int index;
-
-		switch (rot) {
-		case 0: // 0 degrees
-			index = y * dimension + x;
-			break;
-		case 1: // 90 degrees
-			index = dimension * (dimension - 1 - x) + y;
-			break;
-		case 2: // 180 degrees
-			index = dimension * dimension - 1 - (y * dimension + x);
-			break;
-		case 3: // 270 degrees
-			index = dimension * (dimension - y) - 1 - x;
-			break;
+		switch (currentGridRotation) {
+		case GridRotation::Zero:
+			return shape[y * dimension + x];
+		case GridRotation::Ninety:
+			return shape[dimension * (dimension - 1) - dimension * x + y];
+		case GridRotation::OneEighty:
+			return shape[dimension * (dimension - y) - (x + 1)];
+		case GridRotation::TwoSeventy:
+			return shape[(dimension - 1) + dimension * x - y];
 		default:
 			return false;
 		}
 
-		return (index >= 0 && index < dimension * dimension) ? shape[index] : false;
 	}
 	else {
 		// In continuous mode, use the original shape data
@@ -461,23 +452,46 @@ void Tetromino::Update(float deltaTime)
 
 void Tetromino::RotateClockwise()
 {
-	float oldAngle = currentRotation;
-	currentRotation = NormalizeAngle(currentRotation + 1.0f);
-
-	if (IsCollidingWithBoard()) {
-		currentRotation = oldAngle;
+	if (currentMode == PhysicsMode::Grid)
+	{
+		currentGridRotation = static_cast<GridRotation>((static_cast<int>(currentGridRotation) + 90) % 360);
 		CheckCollisionBeforeRotation();
+	}
+	else
+	{
+		float oldAngle = currentRotation;
+		currentRotation = NormalizeAngle(currentRotation + 1.0f);
+
+		if (IsCollidingWithBoard()) {
+			currentRotation = oldAngle;
+			CheckCollisionBeforeRotation();
+		}
 	}
 }
 
 void Tetromino::RotateCounterClockwise()
 {
-	float oldAngle = currentRotation;
-	currentRotation = NormalizeAngle(currentRotation - 1.0f);
-
-	if (IsCollidingWithBoard()) {
-		currentRotation = oldAngle;
+	if (currentMode == PhysicsMode::Grid)
+	{
+		if (currentGridRotation == GridRotation::Zero)
+		{
+			currentGridRotation = GridRotation::TwoSeventy;
+			CheckCollisionBeforeRotation();
+			return;
+		}
+		currentGridRotation = static_cast<GridRotation>((static_cast<int>(currentGridRotation) - 90) % 360);
 		CheckCollisionBeforeRotation();
+
+	}
+	else
+	{
+		float oldAngle = currentRotation;
+		currentRotation = NormalizeAngle(currentRotation - 1.0f);
+
+		if (IsCollidingWithBoard()) {
+			currentRotation = oldAngle;
+			CheckCollisionBeforeRotation();
+		}
 	}
 }
 
