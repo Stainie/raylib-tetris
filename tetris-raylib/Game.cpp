@@ -63,10 +63,10 @@ void Game::Draw()
 
 void Game::DrawMainMenu()
 {
-	DrawText("Tetris", 10, 10, 20, WHITE);
-	DrawText("Press Enter to start", 10, 30, 20, WHITE);
-	DrawText("Press F to toggle fullscreen", 10, 50, 20, WHITE);
-	DrawText("Press ESC to exit", 10, 70, 20, WHITE);
+	DrawText("Tetris", 5, 5, 50, LIGHTGRAY);
+	DrawText("Press Enter to start", 10, 70, 20, WHITE);
+	DrawText("Press F to toggle fullscreen", 10, 90, 20, WHITE);
+	DrawText("Press ESC to exit", 10, 110, 20, WHITE);
 }
 
 void Game::DrawGameplay()

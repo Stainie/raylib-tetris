@@ -33,6 +33,9 @@ public:
 	void RemoveCell(Vec2<int> pos);
 	int GetWidth() const;
 	int GetHeight() const;
+	int GetPadding() const;
+	int GetCellSize() const;
+	Vec2<int> GetScreenPosition() const;
 
 	void Reset();
 private:

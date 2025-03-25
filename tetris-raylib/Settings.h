@@ -1,5 +1,6 @@
 #pragma once
 #include "Vec2.h"
+#include <string>
 
 namespace settings
 {
@@ -18,4 +19,9 @@ namespace settings
 	// Game settings
 	inline constexpr float initialDropInterval = 1.0f;
 	inline constexpr float timeIntervalSpeedUp = 60.0f;
+	inline constexpr float rotationSpeed = 120.0f;
+	inline constexpr float gravity = 1.0f; // pixels/second^2
+	inline constexpr float friction = 0.9f;
+	inline constexpr float restitution = 0.2f; // Bounciness
+	inline constexpr float stability_threshold = 0.8f; // How much the tetromino can tilt before it becomes unstable (how far from center of gravity)
 }

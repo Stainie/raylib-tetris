@@ -7,14 +7,6 @@
 class Tetromino
 {
 public:
-	enum class Rotation
-	{
-		Zero = 0,
-		Ninety = 90,
-		OneEighty = 180,
-		TwoSeventy = 270
-	};
-public:
 	Tetromino(const bool* shape, int dimension, Color color, Board& board);
 	void Draw() const;
 	void Update(float deltaTime);
@@ -27,13 +19,42 @@ public:
 	void AddToBoard() const;
 	bool HasLanded() const;
 	void Reset();
+
+	enum class PhysicsMode
+	{
+		Grid,
+		Continuous
+	};
 private:
+	struct Physics
+	{
+		Vec2<float> position;
+		Vec2<float> velocity;
+		Vec2<float> centerOfMass;
+		float angularVelocity = 0.0f; // degrees/second
+		bool isStable = true;
+	};
+
+	Physics physics;
+	PhysicsMode currentMode = PhysicsMode::Continuous;
+
+	void DrawGridBased() const;
+	void DrawContinuous() const;
+	void TransformToWorldSpace(float& outX, float& outY, int cellX, int cellY) const;
+	void HandleBoundariesAndCollisions();
+	bool ClampPositionToBoundaries();
+	int FindRightmostCell() const;
+	Vec2<float> CalculateCenterOfMass() const;
+	bool IsStable() const;
+	float CalculateTorque() const;
+
 	Vec2<int> pos;
 	Vec2<int> GetLastPos() const;
 	bool IsCellAt(int x, int y) const;
 	void CheckCollisionBeforeRotation();
 	bool IsCollidingWithBoard() const;
-	Rotation currentRotation;
+	float NormalizeAngle(float angle) const;
+	float currentRotation = 0.0f;
 	bool hasLanded;
 	float timeSinceLastMove;
 	float moveInterval;
