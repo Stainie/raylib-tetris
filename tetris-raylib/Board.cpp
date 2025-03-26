@@ -56,6 +56,12 @@ void Board::DrawCell(Vec2<int> pos) const
 
 void Board::DrawCell(Vec2<int> pos, Color color) const
 {
+	// Add safety check before assertion
+	if (pos.GetX() < 0 || pos.GetX() >= width || pos.GetY() < 0 || pos.GetY() >= height) {
+		return; // Skip drawing out-of-bounds cells
+	}
+
+	// Original code continues...
 	assert(pos.GetX() >= 0 && pos.GetX() < width && pos.GetY() >= 0 && pos.GetY() < height);
 	Vec2<int> topLeft = screenPos + padding + (pos * cellSize);
 	Vec2<int> paddedWidthHeight = Vec2<int>(cellSize, cellSize) - padding;
@@ -135,6 +141,21 @@ int Board::GetWidth() const
 int Board::GetHeight() const
 {
 	return height;
+}
+
+int Board::GetPadding() const
+{
+	return padding;
+}
+
+int Board::GetCellSize() const
+{
+	return cellSize;
+}
+
+Vec2<int> Board::GetScreenPosition() const
+{
+	return screenPos;
 }
 
 void Board::Reset()

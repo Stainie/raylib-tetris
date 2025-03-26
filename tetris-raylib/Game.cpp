@@ -1,6 +1,6 @@
 #include <assert.h>
 #include "Game.h"
-#include "raylib.h"
+#include "raylibCpp.h"
 #include "Settings.h"
 #include "GameUtils.h"
 #include "GameState.h"
@@ -63,10 +63,10 @@ void Game::Draw()
 
 void Game::DrawMainMenu()
 {
-	DrawText("Tetris", 10, 10, 20, WHITE);
-	DrawText("Press Enter to start", 10, 30, 20, WHITE);
-	DrawText("Press F to toggle fullscreen", 10, 50, 20, WHITE);
-	DrawText("Press ESC to exit", 10, 70, 20, WHITE);
+	DrawText(settings::title, 5, 5, 50, LIGHTGRAY);
+	DrawText("Press Enter to start", 10, 70, 20, WHITE);
+	DrawText("Press F to toggle fullscreen", 10, 90, 20, WHITE);
+	DrawText("Press ESC to exit", 10, 110, 20, WHITE);
 }
 
 void Game::DrawGameplay()
@@ -158,11 +158,11 @@ void Game::UpdateGameplay()
 	{
 		currentTetromino->MoveLeft();
 	}
-	else if (IsKeyPressed(KEY_DOWN))
+	else if (rayCpp::IsKeyAction(KEY_DOWN))
 	{
 		currentTetromino->RotateClockwise();
 	}
-	else if (IsKeyPressed(KEY_UP))
+	else if (rayCpp::IsKeyAction(KEY_UP))
 	{
 		currentTetromino->RotateCounterClockwise();
 	}

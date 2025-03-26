@@ -1,5 +1,6 @@
 #pragma once
 #include <assert.h>
+#include "Settings.h"
 #include "Vec2.h"
 #include "raylibCpp.h"
 #include "Board.h"
@@ -7,7 +8,7 @@
 class Tetromino
 {
 public:
-	enum class Rotation
+	enum class GridRotation
 	{
 		Zero = 0,
 		Ninety = 90,
@@ -28,12 +29,36 @@ public:
 	bool HasLanded() const;
 	void Reset();
 private:
+	struct Physics
+	{
+		Vec2<float> position;
+		Vec2<float> velocity;
+		Vec2<float> centerOfMass;
+		float angularVelocity = 0.0f; // degrees/second
+		bool isStable = true;
+	};
+
+	Physics physics;
+	settings::PhysicsMode currentMode = settings::currentMode;
+
+	void DrawGridBased() const;
+	void DrawContinuous() const;
+	void TransformToWorldSpace(float& outX, float& outY, int cellX, int cellY) const;
+	void HandleBoundariesAndCollisions();
+	bool ClampPositionToBoundaries();
+	int FindRightmostCell() const;
+	Vec2<float> CalculateCenterOfMass() const;
+	bool IsStable() const;
+	float CalculateTorque() const;
+
 	Vec2<int> pos;
 	Vec2<int> GetLastPos() const;
 	bool IsCellAt(int x, int y) const;
 	void CheckCollisionBeforeRotation();
 	bool IsCollidingWithBoard() const;
-	Rotation currentRotation;
+	float NormalizeAngle(float angle) const;
+	float currentRotation = 0.0f;
+	GridRotation currentGridRotation = GridRotation::Zero;
 	bool hasLanded;
 	float timeSinceLastMove;
 	float moveInterval;
