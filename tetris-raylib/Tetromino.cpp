@@ -21,7 +21,7 @@ Tetromino::Tetromino(const bool* shape, int dimension, Color color, Board& board
 
 void Tetromino::Draw() const
 {
-	if (currentMode == PhysicsMode::Grid) {
+	if (currentMode == settings::PhysicsMode::Grid) {
 		DrawGridBased();
 	}
 	else {
@@ -110,7 +110,7 @@ void Tetromino::HandleBoundariesAndCollisions()
 	bool positionClamped = ClampPositionToBoundaries();
 
 	// If we're in continuous mode and position wasn't clamped, check for collisions
-	if (currentMode == PhysicsMode::Continuous && !positionClamped) {
+	if (currentMode == settings::PhysicsMode::Continuous && !positionClamped) {
 		if (IsCollidingWithBoard()) {
 			// Try reverting to horizontal position but keep vertical
 			Vec2<int> verticalOnlyPos = Vec2<int>(originalPos.GetX(), pos.GetY());
@@ -124,7 +124,7 @@ void Tetromino::HandleBoundariesAndCollisions()
 				if (physics.isStable) {
 					// If stable, land the piece
 					hasLanded = true;
-					currentMode = PhysicsMode::Grid; // Switch back to grid mode when landing
+					currentMode = settings::PhysicsMode::Grid; // Switch back to grid mode when landing
 					currentRotation = round(currentRotation / 90.0f) * 90.0f; // Snap to 90 degrees
 				}
 				else {
@@ -206,7 +206,7 @@ Vec2<int> Tetromino::GetLastPos() const {
 
 bool Tetromino::IsCellAt(int x, int y) const
 {
-	if (currentMode == PhysicsMode::Grid) {
+	if (currentMode == settings::PhysicsMode::Grid) {
 		switch (currentGridRotation) {
 		case GridRotation::Zero:
 			return shape[y * dimension + x];
@@ -394,7 +394,7 @@ void Tetromino::Update(float deltaTime)
 
 	timeSinceLastMove += deltaTime;
 
-	if (currentMode == PhysicsMode::Grid)
+	if (currentMode == settings::PhysicsMode::Grid)
 	{
 		if (timeSinceLastMove >= moveInterval) {
 			timeSinceLastMove = 0.0f;
@@ -420,7 +420,7 @@ void Tetromino::Update(float deltaTime)
 		if (!shouldUsePhysics) {
 			// When switching back to grid, snap rotation to nearest 90 degrees
 			currentRotation = round(currentRotation / 90.0f) * 90.0f;
-			currentMode = PhysicsMode::Grid;
+			currentMode = settings::PhysicsMode::Grid;
 		}
 
 		// Apply physics calculations
@@ -450,7 +450,7 @@ void Tetromino::Update(float deltaTime)
 
 void Tetromino::RotateClockwise()
 {
-	if (currentMode == PhysicsMode::Grid)
+	if (currentMode == settings::PhysicsMode::Grid)
 	{
 		currentGridRotation = static_cast<GridRotation>((static_cast<int>(currentGridRotation) + 90) % 360);
 		CheckCollisionBeforeRotation();
@@ -469,7 +469,7 @@ void Tetromino::RotateClockwise()
 
 void Tetromino::RotateCounterClockwise()
 {
-	if (currentMode == PhysicsMode::Grid)
+	if (currentMode == settings::PhysicsMode::Grid)
 	{
 		if (currentGridRotation == GridRotation::Zero)
 		{

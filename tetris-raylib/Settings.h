@@ -1,6 +1,5 @@
 #pragma once
 #include "Vec2.h"
-#include <string>
 
 namespace settings
 {
@@ -8,7 +7,7 @@ namespace settings
 	inline constexpr int screenWidth = 800;
 	inline constexpr int screenHeight = 600;
 	inline constexpr int fps = 60;
-	inline const std::string title = "Tetris";
+	inline const char* title = "360 Tetris";
 
 	// Board settings
 	inline constexpr int cellSize = 15;
@@ -24,4 +23,11 @@ namespace settings
 	inline constexpr float friction = 0.9f;
 	inline constexpr float restitution = 0.2f; // Bounciness
 	inline constexpr float stability_threshold = 0.8f; // How much the tetromino can tilt before it becomes unstable (how far from center of gravity)
+
+	enum class PhysicsMode
+	{
+		Grid,
+		Continuous
+	};
+	inline PhysicsMode currentMode = PhysicsMode::Continuous;
 }

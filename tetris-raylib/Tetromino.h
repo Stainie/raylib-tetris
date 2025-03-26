@@ -1,5 +1,6 @@
 #pragma once
 #include <assert.h>
+#include "Settings.h"
 #include "Vec2.h"
 #include "raylibCpp.h"
 #include "Board.h"
@@ -27,12 +28,6 @@ public:
 	void AddToBoard() const;
 	bool HasLanded() const;
 	void Reset();
-
-	enum class PhysicsMode
-	{
-		Grid,
-		Continuous
-	};
 private:
 	struct Physics
 	{
@@ -44,7 +39,7 @@ private:
 	};
 
 	Physics physics;
-	PhysicsMode currentMode = PhysicsMode::Grid;
+	settings::PhysicsMode currentMode = settings::currentMode;
 
 	void DrawGridBased() const;
 	void DrawContinuous() const;
