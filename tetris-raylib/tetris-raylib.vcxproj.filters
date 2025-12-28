@@ -67,5 +67,6 @@
     <None Include="build_web.bat">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="shell.html" />
   </ItemGroup>
 </Project>

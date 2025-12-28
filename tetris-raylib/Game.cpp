@@ -34,6 +34,49 @@ void Game::IncreaseDifficulty(float newDropInterval)
 	}
 }
 
+void Game::InitTouchControls()
+{
+	float screenW = static_cast<float>(GetScreenWidth());
+	float screenH = static_cast<float>(GetScreenHeight());
+
+	// Gameplay buttons - positioned at bottom of screen
+	float btnWidth = 70;
+	float btnHeight = 70;
+	float padding = 15;
+	float bottomY = screenH - btnHeight - padding;
+
+	// Left side: movement buttons
+	leftBtn = { padding, bottomY, btnWidth, btnHeight };
+	rightBtn = { padding + btnWidth + 10, bottomY, btnWidth, btnHeight };
+
+	// Right side: rotation and drop buttons
+	rotateLeftBtn = { screenW - btnWidth * 3 - padding - 20, bottomY, btnWidth, btnHeight };
+	rotateRightBtn = { screenW - btnWidth * 2 - padding - 10, bottomY, btnWidth, btnHeight };
+	dropBtn = { screenW - btnWidth - padding, bottomY, btnWidth, btnHeight };
+
+	// Pause button - top right corner
+	pauseBtn = { screenW - 60, 10, 50, 50 };
+
+	// Menu buttons - centered on screen
+	float menuBtnWidth = 200;
+	float menuBtnHeight = 60;
+	float centerX = (screenW - menuBtnWidth) / 2;
+
+	startBtn = { centerX, screenH / 2 - 30, menuBtnWidth, menuBtnHeight };
+	resumeBtn = { centerX, screenH / 2 - 80, menuBtnWidth, menuBtnHeight };
+	restartBtn = { centerX, screenH / 2, menuBtnWidth, menuBtnHeight };
+}
+
+bool Game::IsButtonTouched(Rectangle btn)
+{
+	if (GetTouchPointCount() > 0)
+	{
+		Vector2 touchPos = GetTouchPosition(0);
+		return CheckCollisionPointRec(touchPos, btn);
+	}
+	return false;
+}
+
 void Game::Tick()
 {
 	BeginDrawing();
@@ -92,19 +135,55 @@ void Game::DrawMainMenu()
 
 void Game::DrawGameplay()
 {
-	ClearBackground(BLACK);
+	// Game info
 	DrawText(std::to_string(static_cast<int>(elapsedTime)).c_str(), 10, 10, 20, WHITE);
-	DrawText(("Speed Level: " + std::to_string(speedLevel)).c_str(), 10, 30, 20, WHITE);
+	DrawText(("Level: " + std::to_string(speedLevel)).c_str(), 10, 35, 20, WHITE);
+
+	// Draw board and current piece
 	board.Draw();
 	if (currentTetromino)
 	{
 		currentTetromino->Draw();
 	}
 
-#ifdef PLATFORM_WEB
+	// Draw touch controls
 	DrawTouchControls();
-#endif // PLATFORM_WEB
+}
 
+void Game::DrawTouchControls()
+{
+	Color btnColor = Fade(DARKGRAY, 0.7f);
+	Color btnBorder = Fade(WHITE, 0.5f);
+
+	// Left button
+	DrawRectangleRec(leftBtn, btnColor);
+	DrawRectangleLinesEx(leftBtn, 2, btnBorder);
+	DrawText("<", (int)(leftBtn.x + 25), (int)(leftBtn.y + 20), 30, WHITE);
+
+	// Right button
+	DrawRectangleRec(rightBtn, btnColor);
+	DrawRectangleLinesEx(rightBtn, 2, btnBorder);
+	DrawText(">", (int)(rightBtn.x + 25), (int)(rightBtn.y + 20), 30, WHITE);
+
+	// Rotate left button
+	DrawRectangleRec(rotateLeftBtn, btnColor);
+	DrawRectangleLinesEx(rotateLeftBtn, 2, btnBorder);
+	DrawText("CCW", (int)(rotateLeftBtn.x + 12), (int)(rotateLeftBtn.y + 25), 20, WHITE);
+
+	// Rotate right button
+	DrawRectangleRec(rotateRightBtn, btnColor);
+	DrawRectangleLinesEx(rotateRightBtn, 2, btnBorder);
+	DrawText("CW", (int)(rotateRightBtn.x + 18), (int)(rotateRightBtn.y + 25), 20, WHITE);
+
+	// Drop button
+	DrawRectangleRec(dropBtn, Fade(MAROON, 0.7f));
+	DrawRectangleLinesEx(dropBtn, 2, btnBorder);
+	DrawText("v", (int)(dropBtn.x + 28), (int)(dropBtn.y + 20), 30, WHITE);
+
+	// Pause button
+	DrawRectangleRec(pauseBtn, btnColor);
+	DrawRectangleLinesEx(pauseBtn, 2, btnBorder);
+	DrawText("||", (int)(pauseBtn.x + 15), (int)(pauseBtn.y + 12), 25, WHITE);
 }
 
 void Game::DrawPause()
@@ -184,6 +263,7 @@ void Game::UpdateMainMenu()
 	{
 		currentState = GameState::Gameplay;
 	}
+#ifndef PLATFORM_WEB
 	else if (IsKeyPressed(KEY_F))
 	{
 		ToggleFullscreen();
@@ -191,6 +271,48 @@ void Game::UpdateMainMenu()
 	else if (IsKeyPressed(KEY_ESCAPE))
 	{
 		CloseWindow();
+	}
+#endif
+}
+
+void Game::HandleGameplayTouchInput()
+{
+	if (!currentTetromino || isTouching || touchCooldown > 0) return;
+
+	if (IsButtonTouched(leftBtn))
+	{
+		currentTetromino->MoveLeft();
+		isTouching = true;
+		touchCooldown = TOUCH_COOLDOWN_TIME;
+	}
+	else if (IsButtonTouched(rightBtn))
+	{
+		currentTetromino->MoveRight();
+		isTouching = true;
+		touchCooldown = TOUCH_COOLDOWN_TIME;
+	}
+	else if (IsButtonTouched(rotateLeftBtn))
+	{
+		currentTetromino->RotateCounterClockwise();
+		isTouching = true;
+		touchCooldown = TOUCH_COOLDOWN_TIME;
+	}
+	else if (IsButtonTouched(rotateRightBtn))
+	{
+		currentTetromino->RotateClockwise();
+		isTouching = true;
+		touchCooldown = TOUCH_COOLDOWN_TIME;
+	}
+	else if (IsButtonTouched(dropBtn))
+	{
+		currentTetromino->Drop();
+		isTouching = true;
+		touchCooldown = TOUCH_COOLDOWN_TIME;
+	}
+	else if (IsButtonTouched(pauseBtn))
+	{
+		currentState = GameState::Pause;
+		isTouching = true;
 	}
 }
 
@@ -252,6 +374,7 @@ void Game::UpdateGameplay()
 	{
 		currentState = GameState::Pause;
 	}
+#ifndef PLATFORM_WEB
 	else if (IsKeyPressed(KEY_ESCAPE))
 	{
 		CloseWindow();
@@ -260,11 +383,11 @@ void Game::UpdateGameplay()
 	{
 		ToggleFullscreen();
 	}
+#endif
 
 	currentTetromino->Update(deltaTime);
 	board.Update();
 }
-
 
 void Game::UpdatePause()
 {
@@ -292,10 +415,6 @@ void Game::UpdatePause()
 	{
 		currentState = GameState::Gameplay;
 	}
-	else if (IsKeyPressed(KEY_F))
-	{
-		ToggleFullscreen();
-	}
 	else if (IsKeyPressed(KEY_R))
 	{
 		board.Reset();
@@ -304,129 +423,14 @@ void Game::UpdatePause()
 		speedLevel = settings::initialDropInterval;
 		currentState = GameState::Gameplay;
 	}
+#ifndef PLATFORM_WEB
+	else if (IsKeyPressed(KEY_F))
+	{
+		ToggleFullscreen();
+	}
 	else if (IsKeyPressed(KEY_ESCAPE))
 	{
 		CloseWindow();
 	}
-}
-
-void Game::InitTouchControls()
-{
-	float screenW = static_cast<float>(GetScreenWidth());
-	float screenH = static_cast<float>(GetScreenHeight());
-
-	// Gameplay buttons - positioned at bottom of screen
-	float btnWidth = 70;
-	float btnHeight = 70;
-	float padding = 15;
-	float bottomY = screenH - btnHeight - padding;
-
-	// Left side: movement buttons
-	leftBtn = { padding, bottomY, btnWidth, btnHeight };
-	rightBtn = { padding + btnWidth + 10, bottomY, btnWidth, btnHeight };
-
-	// Right side: rotation and drop buttons
-	rotateLeftBtn = { screenW - btnWidth * 3 - padding - 20, bottomY, btnWidth, btnHeight };
-	rotateRightBtn = { screenW - btnWidth * 2 - padding - 10, bottomY, btnWidth, btnHeight };
-	dropBtn = { screenW - btnWidth - padding, bottomY, btnWidth, btnHeight };
-
-	// Pause button - top right corner
-	pauseBtn = { screenW - 60, 10, 50, 50 };
-
-	// Menu buttons - centered on screen
-	float menuBtnWidth = 200;
-	float menuBtnHeight = 60;
-	float centerX = (screenW - menuBtnWidth) / 2;
-
-	startBtn = { centerX, screenH / 2 - 30, menuBtnWidth, menuBtnHeight };
-	resumeBtn = { centerX, screenH / 2 - 80, menuBtnWidth, menuBtnHeight };
-	restartBtn = { centerX, screenH / 2, menuBtnWidth, menuBtnHeight };
-}
-
-bool Game::IsButtonTouched(Rectangle btn)
-{
-	if (GetTouchPointCount() > 0)
-	{
-		Vector2 touchPos = GetTouchPosition(0);
-		return CheckCollisionPointRec(touchPos, btn);
-	}
-	return false;
-}
-
-
-void Game::HandleGameplayTouchInput()
-{
-	if (!currentTetromino || isTouching || touchCooldown > 0) return;
-
-	if (IsButtonTouched(leftBtn))
-	{
-		currentTetromino->MoveLeft();
-		isTouching = true;
-		touchCooldown = TOUCH_COOLDOWN_TIME;
-	}
-	else if (IsButtonTouched(rightBtn))
-	{
-		currentTetromino->MoveRight();
-		isTouching = true;
-		touchCooldown = TOUCH_COOLDOWN_TIME;
-	}
-	else if (IsButtonTouched(rotateLeftBtn))
-	{
-		currentTetromino->RotateCounterClockwise();
-		isTouching = true;
-		touchCooldown = TOUCH_COOLDOWN_TIME;
-	}
-	else if (IsButtonTouched(rotateRightBtn))
-	{
-		currentTetromino->RotateClockwise();
-		isTouching = true;
-		touchCooldown = TOUCH_COOLDOWN_TIME;
-	}
-	else if (IsButtonTouched(dropBtn))
-	{
-		currentTetromino->Drop();
-		isTouching = true;
-		touchCooldown = TOUCH_COOLDOWN_TIME;
-	}
-	else if (IsButtonTouched(pauseBtn))
-	{
-		currentState = GameState::Pause;
-		isTouching = true;
-	}
-}
-
-void Game::DrawTouchControls()
-{
-	Color btnColor = Fade(DARKGRAY, 0.7f);
-	Color btnBorder = Fade(WHITE, 0.5f);
-
-	// Left button
-	DrawRectangleRec(leftBtn, btnColor);
-	DrawRectangleLinesEx(leftBtn, 2, btnBorder);
-	DrawText("<", (int)(leftBtn.x + 25), (int)(leftBtn.y + 20), 30, WHITE);
-
-	// Right button
-	DrawRectangleRec(rightBtn, btnColor);
-	DrawRectangleLinesEx(rightBtn, 2, btnBorder);
-	DrawText(">", (int)(rightBtn.x + 25), (int)(rightBtn.y + 20), 30, WHITE);
-
-	// Rotate left button
-	DrawRectangleRec(rotateLeftBtn, btnColor);
-	DrawRectangleLinesEx(rotateLeftBtn, 2, btnBorder);
-	DrawText("CCW", (int)(rotateLeftBtn.x + 12), (int)(rotateLeftBtn.y + 25), 20, WHITE);
-
-	// Rotate right button
-	DrawRectangleRec(rotateRightBtn, btnColor);
-	DrawRectangleLinesEx(rotateRightBtn, 2, btnBorder);
-	DrawText("CW", (int)(rotateRightBtn.x + 18), (int)(rotateRightBtn.y + 25), 20, WHITE);
-
-	// Drop button
-	DrawRectangleRec(dropBtn, Fade(MAROON, 0.7f));
-	DrawRectangleLinesEx(dropBtn, 2, btnBorder);
-	DrawText("v", (int)(dropBtn.x + 28), (int)(dropBtn.y + 20), 30, WHITE);
-
-	// Pause button
-	DrawRectangleRec(pauseBtn, btnColor);
-	DrawRectangleLinesEx(pauseBtn, 2, btnBorder);
-	DrawText("||", (int)(pauseBtn.x + 15), (int)(pauseBtn.y + 12), 25, WHITE);
+#endif
 }

@@ -50,7 +50,7 @@ emcc -o %OUTPUT_DIR%\index.html ^
     -s ALLOW_MEMORY_GROWTH=1 ^
     -s FORCE_FILESYSTEM=1 ^
     -DPLATFORM_WEB ^
-    --shell-file %RAYLIB_PATH%\shell.html
+    --shell-file %PROJECT_PATH%\shell.html
 
 if %ERRORLEVEL% EQU 0 (
     echo.
