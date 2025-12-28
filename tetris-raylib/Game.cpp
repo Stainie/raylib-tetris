@@ -12,6 +12,7 @@ Game::Game(int width, int height, int fps, std::string title)
 	assert(!GetWindowHandle());	// Make sure we don't already have a window
 	SetTargetFPS(fps);
 	InitWindow(width, height, title.c_str());
+	InitTouchControls();
 }
 
 Game::~Game() noexcept
@@ -63,10 +64,30 @@ void Game::Draw()
 
 void Game::DrawMainMenu()
 {
-	DrawText("Tetris", 10, 10, 20, WHITE);
-	DrawText("Press Enter to start", 10, 30, 20, WHITE);
-	DrawText("Press F to toggle fullscreen", 10, 50, 20, WHITE);
-	DrawText("Press ESC to exit", 10, 70, 20, WHITE);
+	float screenW = static_cast<float>(GetScreenWidth());
+
+	// Title - centered
+	const char* title = "TETRIS";
+	int titleWidth = MeasureText(title, 60);
+	DrawText(title, (int)(screenW - titleWidth) / 2, 80, 60, WHITE);
+
+	// Start button
+	DrawRectangleRec(startBtn, DARKGRAY);
+	DrawRectangleLinesEx(startBtn, 3, WHITE);
+	const char* startText = "TAP TO START";
+	int startTextWidth = MeasureText(startText, 20);
+	DrawText(startText,
+		(int)(startBtn.x + (startBtn.width - startTextWidth) / 2),
+		(int)(startBtn.y + (startBtn.height - 20) / 2),
+		20, WHITE);
+
+	// Instructions
+	const char* instructions = "Swipe or use buttons to play";
+	int instrWidth = MeasureText(instructions, 16);
+	DrawText(instructions, (int)(screenW - instrWidth) / 2, (int)(startBtn.y + startBtn.height + 30), 16, GRAY);
+
+	// Keyboard hint (for desktop testing)
+	DrawText("Or press ENTER to start", 10, GetScreenHeight() - 30, 16, DARKGRAY);
 }
 
 void Game::DrawGameplay()
@@ -88,15 +109,51 @@ void Game::DrawGameplay()
 
 void Game::DrawPause()
 {
-	DrawText("PAUSED", 10, 10, 20, WHITE);
-	DrawText("Press P to resume", 10, 30, 20, WHITE);
-	DrawText("Press F to toggle fullscreen", 10, 50, 20, WHITE);
-	DrawText("Press R to restart", 10, 70, 20, WHITE);
-	DrawText("Press ESC to exit", 10, 90, 20, WHITE);
+	float screenW = static_cast<float>(GetScreenWidth());
+
+	// Title
+	const char* title = "PAUSED";
+	int titleWidth = MeasureText(title, 50);
+	DrawText(title, (int)(screenW - titleWidth) / 2, 100, 50, WHITE);
+
+	// Resume button
+	DrawRectangleRec(resumeBtn, DARKGREEN);
+	DrawRectangleLinesEx(resumeBtn, 3, WHITE);
+	const char* resumeText = "RESUME";
+	int resumeTextWidth = MeasureText(resumeText, 24);
+	DrawText(resumeText,
+		(int)(resumeBtn.x + (resumeBtn.width - resumeTextWidth) / 2),
+		(int)(resumeBtn.y + (resumeBtn.height - 24) / 2),
+		24, WHITE);
+
+	// Restart button
+	DrawRectangleRec(restartBtn, DARKGRAY);
+	DrawRectangleLinesEx(restartBtn, 3, WHITE);
+	const char* restartText = "RESTART";
+	int restartTextWidth = MeasureText(restartText, 24);
+	DrawText(restartText,
+		(int)(restartBtn.x + (restartBtn.width - restartTextWidth) / 2),
+		(int)(restartBtn.y + (restartBtn.height - 24) / 2),
+		24, WHITE);
+
+	// Keyboard hints
+	DrawText("P - Resume | R - Restart", 10, GetScreenHeight() - 30, 16, DARKGRAY);
 }
 
 void Game::Update()
 {
+	// Update touch cooldown
+	if (touchCooldown > 0)
+	{
+		touchCooldown -= GetFrameTime();
+	}
+
+	// Reset touch state when no longer touching
+	if (GetTouchPointCount() == 0)
+	{
+		isTouching = false;
+	}
+
 	switch (currentState)
 	{
 	case GameState::MainMenu:
@@ -115,7 +172,16 @@ void Game::Update()
 
 void Game::UpdateMainMenu()
 {
-	if (IsKeyPressed(KEY_ENTER)) { // Example condition to start the game
+	// Touch input - start game
+	if (!isTouching && IsButtonTouched(startBtn))
+	{
+		currentState = GameState::Gameplay;
+		isTouching = true;
+	}
+
+	// Keyboard input (for desktop testing)
+	if (IsKeyPressed(KEY_ENTER))
+	{
 		currentState = GameState::Gameplay;
 	}
 	else if (IsKeyPressed(KEY_F))
@@ -134,13 +200,12 @@ void Game::UpdateGameplay()
 		isGameOver = true;
 	}
 
-	float deltaTime = GetFrameTime(); // Get the time elapsed since the last frame
+	float deltaTime = GetFrameTime();
 	elapsedTime += deltaTime;
 
 	// Increase speed level every 60 seconds
 	if (elapsedTime >= settings::timeIntervalSpeedUp * speedLevel) {
 		speedLevel++;
-		// Update the Tetromino drop interval based on the new speed level
 		if (currentTetromino) {
 			currentTetromino->SetDropInterval(std::max(0.1f, 1.0f - 0.1f * (speedLevel - 1)));
 		}
@@ -151,12 +216,13 @@ void Game::UpdateGameplay()
 		{
 			currentTetromino->AddToBoard();
 		}
-
 		currentTetromino = GenerateRandomTetromino(board);
 	}
 
-	HandleTouchInput();
+	// Handle touch input
+	HandleGameplayTouchInput();
 
+	// Keyboard input (for desktop testing)
 	if (IsKeyPressed(KEY_RIGHT))
 	{
 		currentTetromino->MoveRight();
@@ -199,8 +265,29 @@ void Game::UpdateGameplay()
 	board.Update();
 }
 
+
 void Game::UpdatePause()
 {
+	// Touch input
+	if (!isTouching)
+	{
+		if (IsButtonTouched(resumeBtn))
+		{
+			currentState = GameState::Gameplay;
+			isTouching = true;
+		}
+		else if (IsButtonTouched(restartBtn))
+		{
+			board.Reset();
+			if (currentTetromino) currentTetromino->Reset();
+			elapsedTime = 0.0f;
+			speedLevel = settings::initialDropInterval;
+			currentState = GameState::Gameplay;
+			isTouching = true;
+		}
+	}
+
+	// Keyboard input (for desktop testing)
 	if (IsKeyPressed(KEY_P))
 	{
 		currentState = GameState::Gameplay;
@@ -212,7 +299,9 @@ void Game::UpdatePause()
 	else if (IsKeyPressed(KEY_R))
 	{
 		board.Reset();
-		currentTetromino->Reset();
+		if (currentTetromino) currentTetromino->Reset();
+		elapsedTime = 0.0f;
+		speedLevel = settings::initialDropInterval;
 		currentState = GameState::Gameplay;
 	}
 	else if (IsKeyPressed(KEY_ESCAPE))
@@ -223,83 +312,121 @@ void Game::UpdatePause()
 
 void Game::InitTouchControls()
 {
-	// Position buttons at bottom of screen
-	float btnWidth = 80;
-	float btnHeight = 80;
-	float padding = 20;
-	float bottomY = GetScreenHeight() - btnHeight - padding;
+	float screenW = static_cast<float>(GetScreenWidth());
+	float screenH = static_cast<float>(GetScreenHeight());
 
+	// Gameplay buttons - positioned at bottom of screen
+	float btnWidth = 70;
+	float btnHeight = 70;
+	float padding = 15;
+	float bottomY = screenH - btnHeight - padding;
+
+	// Left side: movement buttons
 	leftBtn = { padding, bottomY, btnWidth, btnHeight };
 	rightBtn = { padding + btnWidth + 10, bottomY, btnWidth, btnHeight };
-	rotateBtn = { GetScreenWidth() - btnWidth * 2 - padding - 10, bottomY, btnWidth, btnHeight };
-	dropBtn = { GetScreenWidth() - btnWidth - padding, bottomY, btnWidth, btnHeight };
+
+	// Right side: rotation and drop buttons
+	rotateLeftBtn = { screenW - btnWidth * 3 - padding - 20, bottomY, btnWidth, btnHeight };
+	rotateRightBtn = { screenW - btnWidth * 2 - padding - 10, bottomY, btnWidth, btnHeight };
+	dropBtn = { screenW - btnWidth - padding, bottomY, btnWidth, btnHeight };
+
+	// Pause button - top right corner
+	pauseBtn = { screenW - 60, 10, 50, 50 };
+
+	// Menu buttons - centered on screen
+	float menuBtnWidth = 200;
+	float menuBtnHeight = 60;
+	float centerX = (screenW - menuBtnWidth) / 2;
+
+	startBtn = { centerX, screenH / 2 - 30, menuBtnWidth, menuBtnHeight };
+	resumeBtn = { centerX, screenH / 2 - 80, menuBtnWidth, menuBtnHeight };
+	restartBtn = { centerX, screenH / 2, menuBtnWidth, menuBtnHeight };
 }
 
-void Game::HandleTouchInput()
+bool Game::IsButtonTouched(Rectangle btn)
 {
-	if (!currentTetromino) return;
-
-	// Get touch count
-	int touchCount = GetTouchPointCount();
-
-	if (touchCount > 0)
+	if (GetTouchPointCount() > 0)
 	{
 		Vector2 touchPos = GetTouchPosition(0);
-
-		// Check button presses
-		if (CheckCollisionPointRec(touchPos, leftBtn))
-		{
-			if (!isTouching) {
-				currentTetromino->MoveLeft();
-				isTouching = true;
-			}
-		}
-		else if (CheckCollisionPointRec(touchPos, rightBtn))
-		{
-			if (!isTouching) {
-				currentTetromino->MoveRight();
-				isTouching = true;
-			}
-		}
-		else if (CheckCollisionPointRec(touchPos, rotateBtn))
-		{
-			if (!isTouching) {
-				currentTetromino->RotateClockwise();
-				isTouching = true;
-			}
-		}
-		else if (CheckCollisionPointRec(touchPos, dropBtn))
-		{
-			if (!isTouching) {
-				currentTetromino->Drop();
-				isTouching = true;
-			}
-		}
+		return CheckCollisionPointRec(touchPos, btn);
 	}
-	else
+	return false;
+}
+
+
+void Game::HandleGameplayTouchInput()
+{
+	if (!currentTetromino || isTouching || touchCooldown > 0) return;
+
+	if (IsButtonTouched(leftBtn))
 	{
-		isTouching = false;
+		currentTetromino->MoveLeft();
+		isTouching = true;
+		touchCooldown = TOUCH_COOLDOWN_TIME;
 	}
-
-	// Alternative: Gesture-based controls
-	int gesture = GetGestureDetected();
-	if (gesture == GESTURE_SWIPE_LEFT) currentTetromino->MoveLeft();
-	if (gesture == GESTURE_SWIPE_RIGHT) currentTetromino->MoveRight();
-	if (gesture == GESTURE_SWIPE_DOWN) currentTetromino->Drop();
-	if (gesture == GESTURE_TAP) currentTetromino->RotateClockwise();
+	else if (IsButtonTouched(rightBtn))
+	{
+		currentTetromino->MoveRight();
+		isTouching = true;
+		touchCooldown = TOUCH_COOLDOWN_TIME;
+	}
+	else if (IsButtonTouched(rotateLeftBtn))
+	{
+		currentTetromino->RotateCounterClockwise();
+		isTouching = true;
+		touchCooldown = TOUCH_COOLDOWN_TIME;
+	}
+	else if (IsButtonTouched(rotateRightBtn))
+	{
+		currentTetromino->RotateClockwise();
+		isTouching = true;
+		touchCooldown = TOUCH_COOLDOWN_TIME;
+	}
+	else if (IsButtonTouched(dropBtn))
+	{
+		currentTetromino->Drop();
+		isTouching = true;
+		touchCooldown = TOUCH_COOLDOWN_TIME;
+	}
+	else if (IsButtonTouched(pauseBtn))
+	{
+		currentState = GameState::Pause;
+		isTouching = true;
+	}
 }
 
 void Game::DrawTouchControls()
 {
-	// Semi-transparent buttons
-	DrawRectangleRec(leftBtn, Fade(GRAY, 0.5f));
-	DrawRectangleRec(rightBtn, Fade(GRAY, 0.5f));
-	DrawRectangleRec(rotateBtn, Fade(GRAY, 0.5f));
-	DrawRectangleRec(dropBtn, Fade(GRAY, 0.5f));
+	Color btnColor = Fade(DARKGRAY, 0.7f);
+	Color btnBorder = Fade(WHITE, 0.5f);
 
-	// Button labels
-	DrawText("<", leftBtn.x + 30, leftBtn.y + 25, 30, WHITE);
-	DrawText(">", rightBtn.x + 30, rightBtn.y + 25, 30, WHITE);
-	DrawText("R", rotateBtn.x + 30, rotateBtn.y + 25, 30, WHITE);
-	DrawText("v", dropBtn.x + 30, dropBtn.y + 25, 30, WHITE);
+	// Left button
+	DrawRectangleRec(leftBtn, btnColor);
+	DrawRectangleLinesEx(leftBtn, 2, btnBorder);
+	DrawText("<", (int)(leftBtn.x + 25), (int)(leftBtn.y + 20), 30, WHITE);
+
+	// Right button
+	DrawRectangleRec(rightBtn, btnColor);
+	DrawRectangleLinesEx(rightBtn, 2, btnBorder);
+	DrawText(">", (int)(rightBtn.x + 25), (int)(rightBtn.y + 20), 30, WHITE);
+
+	// Rotate left button
+	DrawRectangleRec(rotateLeftBtn, btnColor);
+	DrawRectangleLinesEx(rotateLeftBtn, 2, btnBorder);
+	DrawText("CCW", (int)(rotateLeftBtn.x + 12), (int)(rotateLeftBtn.y + 25), 20, WHITE);
+
+	// Rotate right button
+	DrawRectangleRec(rotateRightBtn, btnColor);
+	DrawRectangleLinesEx(rotateRightBtn, 2, btnBorder);
+	DrawText("CW", (int)(rotateRightBtn.x + 18), (int)(rotateRightBtn.y + 25), 20, WHITE);
+
+	// Drop button
+	DrawRectangleRec(dropBtn, Fade(MAROON, 0.7f));
+	DrawRectangleLinesEx(dropBtn, 2, btnBorder);
+	DrawText("v", (int)(dropBtn.x + 28), (int)(dropBtn.y + 20), 30, WHITE);
+
+	// Pause button
+	DrawRectangleRec(pauseBtn, btnColor);
+	DrawRectangleLinesEx(pauseBtn, 2, btnBorder);
+	DrawText("||", (int)(pauseBtn.x + 15), (int)(pauseBtn.y + 12), 25, WHITE);
 }
