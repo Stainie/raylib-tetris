@@ -27,12 +27,23 @@ private:
 	void UpdateMainMenu();
 	void UpdateGameplay();
 	void UpdatePause();
+	void HandleTouchInput();
+	void DrawTouchControls();
+	void InitTouchControls();
 
 	Board board;
 	bool isGameOver = false;
 	float elapsedTime = 0.0f;
 	int speedLevel;
 	GameState currentState = GameState::MainMenu;
+	Vector2 touchStartPos;
+	bool isTouching = false;
+	float touchStartTime = 0.0f;
+
+	Rectangle leftBtn;
+	Rectangle rightBtn;
+	Rectangle rotateBtn;
+	Rectangle dropBtn;
 
 	std::unique_ptr<Tetromino> currentTetromino;
 };

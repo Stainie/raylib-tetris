@@ -60,4 +60,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="build_raylib_web.bat">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="build_web.bat">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

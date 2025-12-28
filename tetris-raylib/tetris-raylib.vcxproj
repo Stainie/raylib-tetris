@@ -150,6 +150,10 @@
     <ClInclude Include="Tetromino.h" />
     <ClInclude Include="Vec2.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="build_raylib_web.bat" />
+    <None Include="build_web.bat" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -79,6 +79,11 @@ void Game::DrawGameplay()
 	{
 		currentTetromino->Draw();
 	}
+
+#ifdef PLATFORM_WEB
+	DrawTouchControls();
+#endif // PLATFORM_WEB
+
 }
 
 void Game::DrawPause()
@@ -150,6 +155,8 @@ void Game::UpdateGameplay()
 		currentTetromino = GenerateRandomTetromino(board);
 	}
 
+	HandleTouchInput();
+
 	if (IsKeyPressed(KEY_RIGHT))
 	{
 		currentTetromino->MoveRight();
@@ -212,4 +219,87 @@ void Game::UpdatePause()
 	{
 		CloseWindow();
 	}
+}
+
+void Game::InitTouchControls()
+{
+	// Position buttons at bottom of screen
+	float btnWidth = 80;
+	float btnHeight = 80;
+	float padding = 20;
+	float bottomY = GetScreenHeight() - btnHeight - padding;
+
+	leftBtn = { padding, bottomY, btnWidth, btnHeight };
+	rightBtn = { padding + btnWidth + 10, bottomY, btnWidth, btnHeight };
+	rotateBtn = { GetScreenWidth() - btnWidth * 2 - padding - 10, bottomY, btnWidth, btnHeight };
+	dropBtn = { GetScreenWidth() - btnWidth - padding, bottomY, btnWidth, btnHeight };
+}
+
+void Game::HandleTouchInput()
+{
+	if (!currentTetromino) return;
+
+	// Get touch count
+	int touchCount = GetTouchPointCount();
+
+	if (touchCount > 0)
+	{
+		Vector2 touchPos = GetTouchPosition(0);
+
+		// Check button presses
+		if (CheckCollisionPointRec(touchPos, leftBtn))
+		{
+			if (!isTouching) {
+				currentTetromino->MoveLeft();
+				isTouching = true;
+			}
+		}
+		else if (CheckCollisionPointRec(touchPos, rightBtn))
+		{
+			if (!isTouching) {
+				currentTetromino->MoveRight();
+				isTouching = true;
+			}
+		}
+		else if (CheckCollisionPointRec(touchPos, rotateBtn))
+		{
+			if (!isTouching) {
+				currentTetromino->RotateClockwise();
+				isTouching = true;
+			}
+		}
+		else if (CheckCollisionPointRec(touchPos, dropBtn))
+		{
+			if (!isTouching) {
+				currentTetromino->Drop();
+				isTouching = true;
+			}
+		}
+	}
+	else
+	{
+		isTouching = false;
+	}
+
+	// Alternative: Gesture-based controls
+	int gesture = GetGestureDetected();
+	if (gesture == GESTURE_SWIPE_LEFT) currentTetromino->MoveLeft();
+	if (gesture == GESTURE_SWIPE_RIGHT) currentTetromino->MoveRight();
+	if (gesture == GESTURE_SWIPE_DOWN) currentTetromino->Drop();
+	if (gesture == GESTURE_TAP) currentTetromino->RotateClockwise();
+}
+
+void Game::DrawTouchControls()
+{
+	// Semi-transparent buttons
+	DrawRectangleRec(leftBtn, Fade(GRAY, 0.5f));
+	DrawRectangleRec(rightBtn, Fade(GRAY, 0.5f));
+	DrawRectangleRec(rotateBtn, Fade(GRAY, 0.5f));
+	DrawRectangleRec(dropBtn, Fade(GRAY, 0.5f));
+
+	// Button labels
+	DrawText("<", leftBtn.x + 30, leftBtn.y + 25, 30, WHITE);
+	DrawText(">", rightBtn.x + 30, rightBtn.y + 25, 30, WHITE);
+	DrawText("R", rotateBtn.x + 30, rotateBtn.y + 25, 30, WHITE);
+	DrawText("v", dropBtn.x + 30, dropBtn.y + 25, 30, WHITE);
 }

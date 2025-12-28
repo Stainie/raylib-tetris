@@ -4,13 +4,19 @@
 namespace settings
 {
 	// Window settings
-	inline constexpr int screenWidth = 800;
-	inline constexpr int screenHeight = 600;
+#ifdef PLATFORM_WEB
+	constexpr int screenWidth = 400;   // Narrower for portrait
+	constexpr int screenHeight = 700;  // Taller
+	constexpr int cellSize = 28;       // Slightly smaller cells
+#else
+	constexpr int screenWidth = 800;
+	constexpr int screenHeight = 600;
+	constexpr int cellSize = 30;
+#endif
 	inline constexpr int fps = 60;
 	inline const std::string title = "Tetris";
 
 	// Board settings
-	inline constexpr int cellSize = 15;
 	inline constexpr int boardPadding = 2;
 	inline constexpr Vec2<int> boardPosition{200, 200};
 	inline constexpr Vec2<int> boardWidthHeight{10, 20};
